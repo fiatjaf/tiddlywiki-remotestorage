@@ -13,19 +13,14 @@ class RSSyncer {
   constructor (options) {
     this.wiki = options.wiki
 
-    let style = document.createElement('style')
-    style.innerHTML = `#remotestorage-widget {
-      position: fixed;
-      top: 18px;
-      right: 15px;
-    }`
+    this.readonly = (
+      'yes' === this.wiki.getTextReference('$:/plugins/fiatjaf/remoteStorage/readonly')
+    )
 
     const RemoteStorage = require('remotestoragejs')
     const Widget = require('remotestorage-widget')
 
     this.rs = new RemoteStorage({logging: false})
-    this.rs.access.claim('tiddlers', 'rw')
-    this.rs.caching.enable('/tiddlers/')
 
     this.rs.on('connected', () => {
       console.log('connected')
@@ -35,22 +30,37 @@ class RSSyncer {
       console.log('disconnected')
     })
 
-    let widget = new Widget(this.rs, {
-      leaveOpen: false,
-      autoCloseAfter: 4000
-    })
+    if (this.readonly) {
+      this.rs.access.claim('tiddlers', 'r')
+      this.rs.connect()
+    } else {
+      this.rs.access.claim('tiddlers', 'rw')
+      this.rs.caching.enable('/tiddlers/')
 
-    widget.attach()
-    document.head.appendChild(style)
+      let widget = new Widget(this.rs, {
+        leaveOpen: false,
+        autoCloseAfter: 4000
+      })
 
-    localStorage.setItem(
-      '$:/plugins/fiatjaf/remoteStorage/namespace',
-      localStorage.getItem('$:/plugins/fiatjaf/remoteStorage/namespace') || 'main'
-    )
-    localStorage.setItem(
-      '$:/plugins/fiatjaf/remoteStorage/private',
-      localStorage.getItem('$:/plugins/fiatjaf/remoteStorage/private') || 'no'
-    )
+      widget.attach()
+
+      let style = document.createElement('style')
+      style.innerHTML = `#remotestorage-widget {
+        position: fixed;
+        top: 18px;
+        right: 15px;
+      }`
+      document.head.appendChild(style)
+
+      localStorage.setItem(
+        '$:/plugins/fiatjaf/remoteStorage/namespace',
+        localStorage.getItem('$:/plugins/fiatjaf/remoteStorage/namespace') || 'main'
+      )
+      localStorage.setItem(
+        '$:/plugins/fiatjaf/remoteStorage/private',
+        localStorage.getItem('$:/plugins/fiatjaf/remoteStorage/private') || 'no'
+      )
+    }
   }
 
   getIndex () {
@@ -116,7 +126,27 @@ class RSSyncer {
     return true
   }
 
+  loadTiddler (title, callback) {
+    if (title.slice(0, 33) === '$:/plugins/fiatjaf/remoteStorage/') {
+      return {
+        title,
+        text: localStorage.getItem(title)
+      }
+    }
+
+    this.getClient()
+     .then(client => client.getFile(encodeURIComponent(title)))
+     .then(res => callback(null, JSON.parse(res.data)))
+     .catch(e => {
+       callback(e)
+     })
+
+    return true
+  }
+
   saveTiddler (tiddler, callback, tiddlerInfo) {
+    if (this.readonly) return callback(true)
+
     if (tiddler.fields.title.slice(0, 33) === '$:/plugins/fiatjaf/remoteStorage/') {
       localStorage.setItem(tiddler.fields.title, tiddler.fields.text)
       callback(null)
@@ -151,25 +181,9 @@ class RSSyncer {
     return true
   }
 
-  loadTiddler (title, callback) {
-    if (title.slice(0, 33) === '$:/plugins/fiatjaf/remoteStorage/') {
-      return {
-        title,
-        text: localStorage.getItem(title)
-      }
-    }
-
-    this.getClient()
-     .then(client => client.getFile(encodeURIComponent(title)))
-     .then(res => callback(null, JSON.parse(res.data)))
-     .catch(e => {
-       callback(e)
-     })
-
-    return true
-  }
-
   deleteTiddler (title, callback, tiddlerInfo) {
+    if (this.readonly) return callback(true)
+
     Promise.all([
       this.getClient(),
       this.getIndex()
