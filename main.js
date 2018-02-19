@@ -149,6 +149,10 @@ class RSSyncer {
 
     if (tiddler.fields.title.slice(0, 33) === '$:/plugins/fiatjaf/remoteStorage/') {
       localStorage.setItem(tiddler.fields.title, tiddler.fields.text)
+
+      // whenever this happens we must reload our index
+      this._index = null
+
       callback(null)
       return
     }
