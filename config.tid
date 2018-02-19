@@ -1,6 +1,6 @@
 title: $:/plugins/fiatjaf/remoteStorage/config
-caption: remoteStorage Config
-tags: [[$:/tags/ControlPanel/Info]]
+caption: remoteStorage SyncAdaptor
+tags: [[$:/tags/ControlPanel/Saving]]
 
 \define lingo-base() $:/language/ControlPanel/Basics/
 
