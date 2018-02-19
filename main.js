@@ -127,7 +127,8 @@ class RSSyncer {
   }
 
   loadTiddler (title, callback) {
-    if (title.slice(0, 33) === '$:/plugins/fiatjaf/remoteStorage/') {
+    if (title.slice(0, 33) === '$:/plugins/fiatjaf/remoteStorage/' ||
+        title === '$:/StoryList') {
       return {
         title,
         text: localStorage.getItem(title)
@@ -147,11 +148,14 @@ class RSSyncer {
   saveTiddler (tiddler, callback, tiddlerInfo) {
     if (this.readonly) return callback(true)
 
-    if (tiddler.fields.title.slice(0, 33) === '$:/plugins/fiatjaf/remoteStorage/') {
+    if (tiddler.fields.title.slice(0, 33) === '$:/plugins/fiatjaf/remoteStorage/' ||
+        tiddler.fields.title === '$:/StoryList') {
       localStorage.setItem(tiddler.fields.title, tiddler.fields.text)
 
       // whenever this happens we must reload our index
-      this._index = null
+      if (tiddler.fields.title.split('/')[3] === 'remoteStorage') {
+        this._index = null
+      }
 
       callback(null)
       return
