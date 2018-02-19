@@ -1,0 +1,7 @@
+title: $:/plugins/fiatjaf/remoteStorage/about
+caption: remoteStorage Plugin
+type: text/vnd.tiddlywiki
+
+This plugin provides a [[syncadaptor|https://tiddlywiki.com/dev/#SyncAdaptorModules]] module for saving changes on a [[remoteStorage|https://remotestorage.io/]] server.
+
+{{$:/plugins/remoteStorageConfig}}

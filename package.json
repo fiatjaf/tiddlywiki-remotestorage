@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "remotestorage-widget": "^1.3.0",
+    "remotestoragejs": "^1.0.2"
+  },
+  "devDependencies": {
+    "browserify": "^16.1.0"
+  },
+  "scripts": {
+    "build": "browserify --standalone _ main.js > /home/fiatjaf/comp/TW5/plugins/fiatjaf/remotestorage/main.js && cp about.tid config.tid plugin.info /home/fiatjaf/comp/TW5/plugins/fiatjaf/remotestorage/"
+  }
+}

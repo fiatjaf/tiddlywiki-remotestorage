@@ -1,0 +1,29 @@
+title: $:/plugins/fiatjaf/remoteStorage/config
+caption: remoteStorage Config
+tags: [[$:/tags/ControlPanel/Info]]
+
+\define lingo-base() $:/language/ControlPanel/Basics/
+
+!! Choose a namespace to save your tiddlers into:
+
+|''Namespace'' |<$edit-text tiddler="$:/plugins/fiatjaf/remoteStorage/namespace" tag="input" default="main" /> |
+|''Kind'' | <$reveal type="nomatch" state="$:/plugins/fiatjaf/remoteStorage/private" text="yes">public</$reveal><$reveal type="match" state="$:/plugins/fiatjaf/remoteStorage/private" text="yes">private</$reveal> |
+
+The actual path in your remoteStorage server will be:
+
+  <$reveal type="nomatch" state="$:/plugins/fiatjaf/remoteStorage/private" text="yes">public</$reveal>/tiddlers/{{$:/plugins/fiatjaf/remoteStorage/namespace}}/
+
+  <$reveal type="match" state="$:/plugins/fiatjaf/remoteStorage/private" text="yes">
+    <$button set="$:/plugins/fiatjaf/remoteStorage/private" setTo="no">
+      Make public
+    </$button>
+  </$reveal>
+  <$reveal type="nomatch" state="$:/plugins/fiatjaf/remoteStorage/private" text="yes">
+    <$button set="$:/plugins/fiatjaf/remoteStorage/private" setTo="yes">
+      Make private
+    </$button>
+  </$reveal>
+
+---
+
+Please refresh the page if you change this value.
