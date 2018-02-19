@@ -20,6 +20,7 @@ class RSSyncer {
     const RemoteStorage = require('remotestoragejs')
     const Widget = require('remotestorage-widget')
 
+    this.ls = localStorage
     this.rs = new RemoteStorage({logging: false})
 
     this.rs.on('connected', () => {
@@ -52,14 +53,10 @@ class RSSyncer {
       }`
       document.head.appendChild(style)
 
-      localStorage.setItem(
-        '$:/plugins/fiatjaf/remoteStorage/namespace',
-        localStorage.getItem('$:/plugins/fiatjaf/remoteStorage/namespace') || 'main'
-      )
-      localStorage.setItem(
-        '$:/plugins/fiatjaf/remoteStorage/private',
-        localStorage.getItem('$:/plugins/fiatjaf/remoteStorage/private') || 'no'
-      )
+      let ns = this.ls.getItem('$:/plugins/fiatjaf/remoteStorage/namespace') || 'main'
+      let priv = this.ls.getItem('$:/plugins/fiatjaf/remoteStorage/private') || 'no'
+      this.wiki.setText('$:/plugins/fiatjaf/remoteStorage/namespace', null, null, ns)
+      this.wiki.setText('$:/plugins/fiatjaf/remoteStorage/private', null, null, priv)
     }
   }
 
@@ -112,11 +109,15 @@ class RSSyncer {
   getSkinnyTiddlers (callback) {
     this.getIndex()
       .then(index => {
-        let tiddlers = Object.keys(index)
+        var tiddlers = Object.keys(index)
           .map(title => ({
             title,
             tags: index[title].tags
           }))
+        tiddlers.push({title: '$:/plugins/fiatjaf/remoteStorage/namespace'})
+        tiddlers.push({title: '$:/plugins/fiatjaf/remoteStorage/private'})
+        tiddlers.push({title: '$:/StoryList'})
+
         callback(null, tiddlers)
       })
       .catch(e => {
@@ -129,10 +130,15 @@ class RSSyncer {
   loadTiddler (title, callback) {
     if (title.slice(0, 33) === '$:/plugins/fiatjaf/remoteStorage/' ||
         title === '$:/StoryList') {
-      return {
-        title,
-        text: localStorage.getItem(title)
+      let tiddler = this.ls.getItem(title)
+
+      try {
+        callback(null, JSON.parse(tiddler))
+      } catch (e) {
+        callback(null, {title, text: tiddler})
       }
+
+      return
     }
 
     this.getClient()
@@ -150,7 +156,7 @@ class RSSyncer {
 
     if (tiddler.fields.title.slice(0, 33) === '$:/plugins/fiatjaf/remoteStorage/' ||
         tiddler.fields.title === '$:/StoryList') {
-      localStorage.setItem(tiddler.fields.title, tiddler.fields.text)
+      this.ls.setItem(tiddler.fields.title, JSON.stringify(tiddler.fields))
 
       // whenever this happens we must reload our index
       if (tiddler.fields.title.split('/')[3] === 'remoteStorage') {
@@ -191,6 +197,11 @@ class RSSyncer {
 
   deleteTiddler (title, callback, tiddlerInfo) {
     if (this.readonly) return callback(true)
+
+    if (title.slice(0, 33) === '$:/plugins/fiatjaf/remoteStorage/' ||
+        title === '$:/StoryList') {
+      this.ls.removeItem(title)
+    }
 
     Promise.all([
       this.getClient(),
