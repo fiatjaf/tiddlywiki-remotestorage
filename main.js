@@ -7,7 +7,7 @@ Saves tiddlers to somewhere under the tiddlers/ namespace on remoteStorage.
 
 \*/
 
-/* global $tw */
+/* global $tw, fetch */
 
 class RSSyncer {
   constructor (options) {
@@ -20,6 +20,8 @@ class RSSyncer {
     const RemoteStorage = require('remotestoragejs')
     const Widget = require('remotestorage-widget')
 
+    this.Discover = require('remotestoragejs/src/discover')
+
     this.ls = localStorage
     this.rs = new RemoteStorage({logging: false})
 
@@ -31,10 +33,7 @@ class RSSyncer {
       console.log('disconnected')
     })
 
-    if (this.readonly) {
-      this.rs.access.claim('tiddlers', 'r')
-      this.rs.connect()
-    } else {
+    if (!this.readonly) {
       this.rs.access.claim('tiddlers', 'rw')
       this.rs.caching.enable('/tiddlers/')
 
@@ -55,9 +54,30 @@ class RSSyncer {
 
       let ns = this.ls.getItem('$:/plugins/fiatjaf/remoteStorage/namespace') || 'main'
       let priv = this.ls.getItem('$:/plugins/fiatjaf/remoteStorage/private') || 'no'
-      this.wiki.setText('$:/plugins/fiatjaf/remoteStorage/namespace', null, null, ns)
       this.wiki.setText('$:/plugins/fiatjaf/remoteStorage/private', null, null, priv)
+      this.wiki.setText('$:/plugins/fiatjaf/remoteStorage/namespace', null, null, ns)
     }
+  }
+
+  getClient () {
+    let ns = this.wiki.getTextReference('$:/plugins/fiatjaf/remoteStorage/namespace') || 'main'
+    let priv = this.wiki.getTextReference('$:/plugins/fiatjaf/remoteStorage/private') || 'no'
+    let baseuri = `/${priv !== 'yes' ? 'public/' : ''}tiddlers/${ns}/`
+
+    if (this.readonly) {
+      let addr = this.wiki.getTextReference('$:/plugins/fiatjaf/remoteStorage/userAddress')
+
+      return this.Discover(addr)
+        .then(info => ({
+          getFile (key) {
+            return fetch(info.href + baseuri + encodeURIComponent(key))
+              .then(r => r.text())
+              .then(text => ({data: text}))
+          }
+        }))
+    }
+
+    return Promise.resolve(this.rs.scope(baseuri))
   }
 
   getIndex () {
@@ -82,20 +102,6 @@ class RSSyncer {
         '__index__',
         JSON.stringify(index)
       ))
-  }
-
-  getClient () {
-    return new Promise(resolve => {
-      if (this._client) resolve(this._client)
-
-      let ns = this.wiki.getTextReference('$:/plugins/fiatjaf/remoteStorage/namespace') ||
-        'main'
-      let priv = this.wiki.getTextReference('$:/plugins/fiatjaf/remoteStorage/private') ||
-        'no'
-      let client = this.rs.scope(`/${priv !== 'yes' ? 'public/' : ''}tiddlers/${ns}/`)
-      this._client = client
-      resolve(client)
-    })
   }
 
   getTiddlerInfo (tiddler) {
@@ -152,7 +158,7 @@ class RSSyncer {
   }
 
   saveTiddler (tiddler, callback, tiddlerInfo) {
-    if (this.readonly) return callback(true)
+    if (this.readonly) return callback(null)
 
     if (tiddler.fields.title.slice(0, 33) === '$:/plugins/fiatjaf/remoteStorage/' ||
         tiddler.fields.title === '$:/StoryList') {
@@ -196,7 +202,7 @@ class RSSyncer {
   }
 
   deleteTiddler (title, callback, tiddlerInfo) {
-    if (this.readonly) return callback(true)
+    if (this.readonly) return callback(null)
 
     if (title.slice(0, 33) === '$:/plugins/fiatjaf/remoteStorage/' ||
         title === '$:/StoryList') {
