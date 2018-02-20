@@ -120,9 +120,11 @@ class RSSyncer {
             title,
             tags: index[title].tags
           }))
+
         tiddlers.push({title: '$:/plugins/fiatjaf/remoteStorage/namespace'})
         tiddlers.push({title: '$:/plugins/fiatjaf/remoteStorage/private'})
-        tiddlers.push({title: '$:/StoryList'})
+
+        if (!this.readonly) tiddlers.push({title: '$:/StoryList'})
 
         callback(null, tiddlers)
       })
@@ -134,6 +136,11 @@ class RSSyncer {
   }
 
   loadTiddler (title, callback) {
+    if (this.readonly && title === '$:/StoryList') {
+      callback(null, {title: '$:/StoryList'})
+      return
+    }
+
     if (title.slice(0, 33) === '$:/plugins/fiatjaf/remoteStorage/' ||
         title === '$:/StoryList') {
       let tiddler = this.ls.getItem(title)
