@@ -2,7 +2,7 @@
   "title": "$:/plugins/fiatjaf/remoteStorage",
   "description": "remoteStorage sync adaptor",
   "author": "fiatjaf",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "core-version": ">=5.0.8",
   "source": "https://github.com/fiatjaf/tiddlywiki-remotestorage",
   "plugin-type": "plugin"

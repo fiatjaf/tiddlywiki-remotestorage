@@ -14,7 +14,7 @@ class RSSyncer {
     this.wiki = options.wiki
 
     this.readonly = (
-      'yes' === this.wiki.getTextReference('$:/plugins/fiatjaf/remoteStorage/readonly')
+      'yes' === this.getTiddlerText('$:/plugins/fiatjaf/remoteStorage/readonly')
     )
 
     const RemoteStorage = require('remotestoragejs')
@@ -60,12 +60,12 @@ class RSSyncer {
   }
 
   getClient () {
-    let ns = this.wiki.getTextReference('$:/plugins/fiatjaf/remoteStorage/namespace') || 'main'
-    let priv = this.wiki.getTextReference('$:/plugins/fiatjaf/remoteStorage/private') || 'no'
+    let ns = this.getTiddlerText('$:/plugins/fiatjaf/remoteStorage/namespace', 'main')
+    let priv = this.getTiddlerText('$:/plugins/fiatjaf/remoteStorage/private', 'no')
     let baseuri = `/${priv !== 'yes' ? 'public/' : ''}tiddlers/${ns}/`
 
     if (this.readonly) {
-      let addr = this.wiki.getTextReference('$:/plugins/fiatjaf/remoteStorage/userAddress')
+      let addr = this.getTiddlerText('$:/plugins/fiatjaf/remoteStorage/userAddress')
 
       return this.Discover(addr)
         .then(info => ({
@@ -236,6 +236,17 @@ class RSSyncer {
       })
 
     return true
+  }
+
+  getTiddlerText (title, deft) {
+    let tiddler = this.wiki.getTextReference(title)
+    var text
+    try {
+      text = JSON.parse(tiddler).text
+    } catch (e) {
+      text = tiddler
+    }
+    return text || deft
   }
 }
 
