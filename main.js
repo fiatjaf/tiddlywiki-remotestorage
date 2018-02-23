@@ -9,6 +9,9 @@ Saves tiddlers to somewhere under the tiddlers/ namespace on remoteStorage.
 
 /* global $tw, fetch */
 
+const NAMESPACE_KEY = '$:/plugins/fiatjaf/remoteStorage/namespace'
+const PRIVATENESS_KEY = '$:/plugins/fiatjaf/remoteStorage/private'
+
 class RSSyncer {
   constructor (options) {
     this.wiki = options.wiki
@@ -52,16 +55,25 @@ class RSSyncer {
       }`
       document.head.appendChild(style)
 
-      let ns = this.ls.getItem('$:/plugins/fiatjaf/remoteStorage/namespace') || 'main'
-      let priv = this.ls.getItem('$:/plugins/fiatjaf/remoteStorage/private') || 'no'
-      this.wiki.setText('$:/plugins/fiatjaf/remoteStorage/private', null, null, priv)
-      this.wiki.setText('$:/plugins/fiatjaf/remoteStorage/namespace', null, null, ns)
+      var ns = this.getTiddlerText(NAMESPACE_KEY)
+      if (!ns) {
+        ns = this.ls.getItem(NAMESPACE_KEY) || 'main'
+        this.ls.setItem(NAMESPACE_KEY, ns)
+        this.wiki.setText(NAMESPACE_KEY, null, null, ns)
+      }
+
+      var priv = this.getTiddlerText(PRIVATENESS_KEY)
+      if (!priv) {
+        priv = this.ls.getItem(PRIVATENESS_KEY) || 'main'
+        this.ls.setItem(PRIVATENESS_KEY, priv)
+        this.wiki.setText(PRIVATENESS_KEY, null, null, priv)
+      }
     }
   }
 
   getClient () {
-    let ns = this.getTiddlerText('$:/plugins/fiatjaf/remoteStorage/namespace', 'main')
-    let priv = this.getTiddlerText('$:/plugins/fiatjaf/remoteStorage/private', 'no')
+    let ns = this.getTiddlerText(NAMESPACE_KEY, 'main')
+    let priv = this.getTiddlerText(PRIVATENESS_KEY, 'no')
     let baseuri = `/${priv !== 'yes' ? 'public/' : ''}tiddlers/${ns}/`
 
     if (this.readonly) {
@@ -121,8 +133,8 @@ class RSSyncer {
             tags: index[title].tags
           }))
 
-        tiddlers.push({title: '$:/plugins/fiatjaf/remoteStorage/namespace'})
-        tiddlers.push({title: '$:/plugins/fiatjaf/remoteStorage/private'})
+        tiddlers.push({title: NAMESPACE_KEY})
+        tiddlers.push({title: PRIVATENESS_KEY})
 
         if (!this.readonly) tiddlers.push({title: '$:/StoryList'})
 
