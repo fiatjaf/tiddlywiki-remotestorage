@@ -158,7 +158,7 @@ class RSSyncer {
       let tiddler = this.ls.getItem(title)
 
       try {
-        callback(null, JSON.parse(tiddler))
+        callback(null, parseTiddlerDates(JSON.parse(tiddler)))
       } catch (e) {
         callback(null, {title, text: tiddler})
       }
@@ -168,7 +168,7 @@ class RSSyncer {
 
     this.getClient()
      .then(client => client.getFile(encodeURIComponent(title)))
-     .then(res => callback(null, JSON.parse(res.data)))
+     .then(res => callback(null, parseTiddlerDates(JSON.parse(res.data))))
      .catch(e => {
        callback(e)
      })
@@ -260,6 +260,12 @@ class RSSyncer {
     }
     return text || deft
   }
+}
+
+function parseTiddlerDates (fields) {
+  fields.created = fields.created && new Date(Date.parse(fields.created))
+  fields.modified = fields.modified && new Date(Date.parse(fields.modified))
+  return fields
 }
 
 if ($tw.browser) {
