@@ -128,10 +128,7 @@ class RSSyncer {
     this.getIndex()
       .then(index => {
         var tiddlers = Object.keys(index)
-          .map(title => ({
-            title,
-            tags: index[title].tags
-          }))
+          .map(title => Object.assign({title}, index[title]))
 
         tiddlers.push({title: NAMESPACE_KEY})
         tiddlers.push({title: PRIVATENESS_KEY})
@@ -197,9 +194,10 @@ class RSSyncer {
       this.getIndex()
     ])
       .then(([client, index]) => {
-        index[tiddler.fields.title] = {
-          tags: tiddler.fields.tags
-        }
+        var skinny = Object.assign({}, tiddler.fields)
+        delete skinny.text
+        delete skinny.title
+        index[tiddler.fields.title] = skinny
 
         return Promise.all([
           client.storeFile(
