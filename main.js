@@ -63,7 +63,7 @@ class RSSyncer {
 
       let priv = this.getTiddlerText(PRIVATENESS_KEY) ||
         this.ls.getItem(PRIVATENESS_KEY) ||
-        'yes'
+        'no'
       this.ls.setItem(PRIVATENESS_KEY, priv)
       this.wiki.setText(PRIVATENESS_KEY, null, null, priv)
     }
