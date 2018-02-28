@@ -55,19 +55,17 @@ class RSSyncer {
       }`
       document.head.appendChild(style)
 
-      var ns = this.getTiddlerText(NAMESPACE_KEY)
-      if (!ns) {
-        ns = this.ls.getItem(NAMESPACE_KEY) || 'main'
-        this.ls.setItem(NAMESPACE_KEY, ns)
-        this.wiki.setText(NAMESPACE_KEY, null, null, ns)
-      }
+      let ns = this.getTiddlerText(NAMESPACE_KEY) ||
+        this.ls.getItem(NAMESPACE_KEY) ||
+        'main'
+      this.ls.setItem(NAMESPACE_KEY, ns)
+      this.wiki.setText(NAMESPACE_KEY, null, null, ns)
 
-      var priv = this.getTiddlerText(PRIVATENESS_KEY)
-      if (!priv) {
-        priv = this.ls.getItem(PRIVATENESS_KEY) || 'main'
-        this.ls.setItem(PRIVATENESS_KEY, priv)
-        this.wiki.setText(PRIVATENESS_KEY, null, null, priv)
-      }
+      let priv = this.getTiddlerText(PRIVATENESS_KEY) ||
+        this.ls.getItem(PRIVATENESS_KEY) ||
+        'yes'
+      this.ls.setItem(PRIVATENESS_KEY, priv)
+      this.wiki.setText(PRIVATENESS_KEY, null, null, priv)
     }
   }
 
@@ -249,7 +247,7 @@ class RSSyncer {
   }
 
   getTiddlerText (title, deft) {
-    let tiddler = this.wiki.getTextReference(title)
+    let tiddler = this.wiki.getTiddlerText(title)
     var text
     try {
       text = JSON.parse(tiddler).text
