@@ -8,14 +8,6 @@ Your tiddlers will be saved on `/public/tiddlers/<chosen-namespace>/`.
 
 ---
 
-### Easy setup
+## Just start using it now
 
-If you're starting on the [TiddlyWiki](https://tiddlywiki.com/) world, you can just visit https://tiddly.alhur.es/, login with your [remoteStorage account](https://wiki.remotestorage.io/Servers) on the widget and start adding tiddlers! Your TiddlyWiki will be viewable to anyone on `https://tiddly.alhur.es/<your-remotestorage-address>/<chosen-namespace>/` at any moment!
-
-Just remember that, to avoid causing problems to visitors, the wiki displayed at `https://tiddly.alhur.es/<your-remotestorage-address>/<chosen-namespace>/` will not save its edits, not even if you're the one browsing it. To edit and have your edits saved to remoteStorage, go to https://tiddly.alhur.es/ only.
-
-(If you already have a TiddlyWiki and wants to migrate to this remoteStorage-based setup, you'll have to install the plugin on your own TiddlyWiki wherever it is and somehow push all your tiddlers to remoteStorage -- after that you'll be able to use https://tiddly.alhur.es/ normally.)
-
----
-
-https://tiddly.alhur.es/ is powered by https://github.com/fiatjaf/tiddlywiki-remotestorage-server.
+If you're just starting a new TiddlyWiki you don't have to bother installing anything, just visit https://tiddly.alhur.es/ and start writing. Changes will be saved locally, but you can login anytime to a remoteStorage account and your tiddlers will be saved automatically there.
